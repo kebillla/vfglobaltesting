@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title data-i18n="success.title">Оплата прошла</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0B1B2B">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230B1B2B'/><rect x='7' y='16' width='4' height='9' fill='%231FAE7C'/><rect x='14' y='10' width='4' height='15' fill='%231FAE7C'/><rect x='21' y='6' width='4' height='19' fill='%231FAE7C'/></svg>">
+<link rel="stylesheet" href="assets/css/styles.css?v=3">
+<script src="assets/js/config.js?v=3"></script>
+<script src="assets/js/i18n.js?v=3"></script>
+<script src="assets/js/analytics.js?v=3" defer></script>
+<script src="assets/js/app.js?v=3" defer></script>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-tg" viewBox="0 0 24 24"><path d="M21 4.5 2.9 11.4c-1 .4-1 1.8.1 2l4.5 1.3 1.7 5.1c.3.8 1.3 1 1.9.4l2.5-2.4 4.6 3.4c.7.5 1.7.1 1.9-.7L22.9 5.6c.2-.9-.7-1.5-1.5-1.1Z" fill="currentColor"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4.5 21 20H3l9-15.5Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M12 10v4.2M12 17.2h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+</svg>
+
+<header class="hdr">
+  <div class="wrap hdr__in">
+    <a class="logo" href="index.html" aria-label="VolFix Global">
+      <span class="logo__mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="logo__txt">Vol<b>Fix</b> <span class="logo__sfx">Global</span></span>
+    </a>
+    <div class="hdr__right">
+      <div class="lang" role="group" aria-label="Язык / Тіл">
+        <button type="button" class="lang__btn" data-lang="ru">RU</button>
+        <button type="button" class="lang__btn" data-lang="kk">KZ</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="done" data-success>
+  <span class="done__ic"><svg class="ic ic--lg"><use href="#i-check"></use></svg></span>
+  <h1 data-i18n="success.h1">Готово! Доступ открыт</h1>
+  <p class="done__sub" data-i18n="success.sub">Ниже — персональная ссылка-приглашение в закрытую группу.</p>
+
+  <div class="linkbox">
+    <p class="linkbox__l" data-i18n="success.linkLabel">Ваша ссылка в Telegram</p>
+    <div class="linkbox__v">
+      <code data-invite>https://t.me/+DEMO_INVITE_LINK_PLACEHOLDER</code>
+      <button type="button" data-copy data-i18n="success.copy">Скопировать</button>
+    </div>
+    <!-- Заглушка: реальная одноразовая ссылка придёт из Telegram Bot API
+         (createChatInviteLink с member_limit=1) после вебхука об оплате. -->
+    <div class="stub" style="margin-bottom:0">
+      <svg class="ic ic--xs"><use href="#i-warn"></use></svg>
+      <p data-i18n="success.stub"></p>
+    </div>
+  </div>
+
+  <a class="btn btn--lg" data-link="telegram" href="#" target="_blank" rel="noopener">
+    <svg class="ic"><use href="#i-tg"></use></svg><span data-i18n="success.open">Открыть Telegram</span>
+  </a>
+
+  <p class="done__note" data-i18n="success.mail">Копию ссылки мы продублируем на почту и в SMS.</p>
+  <p class="done__note" data-i18n="success.volfix">Инструкция по активации VolFix ждёт вас внутри группы.</p>
+  <p class="done__note"><a href="index.html" style="color:var(--acc)" data-i18n="success.back">Вернуться на сайт</a></p>
+</main>
+
+</body>
+</html>
