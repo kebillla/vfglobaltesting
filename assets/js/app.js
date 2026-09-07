@@ -384,7 +384,11 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(lead)
       })
-        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (r) {
+          /* 404 = бэкенда нет вовсе (статический хостинг) -> демо-режим */
+          if (r.status === 404) return { stub: true };
+          return r.json().catch(function () { return {}; });
+        })
         .then(function (data) {
           done();
           if (data && data.pay_url) { location.href = data.pay_url; return; }
@@ -392,9 +396,10 @@
           showFormError(form, data && data.error);
         })
         .catch(function (err) {
+          /* сеть недоступна — не теряем лид: он уже в localStorage, показываем демо */
           console.warn('[pay] сервер недоступен:', err);
           done();
-          showFormError(form, 'network');
+          showStep(idx + 1);
         });
     });
   }
