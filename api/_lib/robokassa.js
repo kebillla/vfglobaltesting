@@ -8,13 +8,25 @@
 
 const crypto = require('crypto');
 
+const isTest = process.env.ROBOKASSA_TEST === '1';
+
+/* В тестовом режиме Robokassa проверяет подписи ОТДЕЛЬНОЙ парой паролей —
+   их задают в «Технических настройках» магазина, и они не должны совпадать
+   с боевыми. Держим обе пары: переключение теста и прода — один флаг. */
+const pass1 = isTest ? (process.env.ROBOKASSA_TEST_PASSWORD_1 || '') : (process.env.ROBOKASSA_PASSWORD_1 || '');
+const pass2 = isTest ? (process.env.ROBOKASSA_TEST_PASSWORD_2 || '') : (process.env.ROBOKASSA_PASSWORD_2 || '');
+
+if (isTest && !pass1) {
+  console.warn('[robokassa] ROBOKASSA_TEST=1, но тестовые пароли не заданы — оплата не заработает');
+}
+
 const CFG = {
   login:    process.env.ROBOKASSA_LOGIN || '',
-  pass1:    process.env.ROBOKASSA_PASSWORD_1 || '',
-  pass2:    process.env.ROBOKASSA_PASSWORD_2 || '',
+  pass1,
+  pass2,
   endpoint: process.env.ROBOKASSA_ENDPOINT || 'https://auth.robokassa.kz/Merchant/Payment/Index',
   algo:    (process.env.ROBOKASSA_HASH_ALGO || 'md5').toLowerCase(),
-  isTest:   process.env.ROBOKASSA_TEST === '1',
+  isTest,
   currency: process.env.ROBOKASSA_OUT_SUM_CURRENCY || ''   // пусто = валюта магазина
 };
 
