@@ -332,6 +332,13 @@
     }).catch(function (err) { console.warn('[lead] отправка не удалась:', err); });
   }
 
+  function showFormError(form, code) {
+    var em = $('[data-err="consent"]', form);
+    if (!em) return;
+    em.textContent = t(code === 'invalid_fields' ? 'form.err.fields' : 'form.err.server');
+    em.classList.add('is-on');
+  }
+
   function bindForm() {
     var form = $('#lead-form');
     if (!form) return;
@@ -363,18 +370,32 @@
         source: ctaSource, experience: answers.experience || '', budget: answers.budget || ''
       });
 
-      saveLead(lead).then(function () {
+      var done = function () {
         if (btn) { btn.disabled = false; if (label) label.textContent = t('form.submit'); }
+      };
 
-        /* Реальная платёжка (когда появится юрлицо) — редирект на payUrl. */
-        if (CFG.payment.provider !== 'stub' && CFG.payment.payUrl) {
-          location.href = CFG.payment.payUrl +
-            (CFG.payment.payUrl.indexOf('?') > -1 ? '&' : '?') +
-            'email=' + encodeURIComponent(lead.email) + '&lang=' + lang;
-          return;
-        }
-        showStep(idx + 1);   /* заглушка оплаты */
-      });
+      saveLead(lead);
+
+      /* Заводим заказ на сервере и уходим на платёжную форму Robokassa.
+         Пока ключи магазина не заданы, сервер отвечает {stub:true} —
+         показываем демо-экран, чтобы лендинг работал и до подключения оплаты. */
+      fetch(CFG.payment.createUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(lead)
+      })
+        .then(function (r) { return r.json().catch(function () { return {}; }); })
+        .then(function (data) {
+          done();
+          if (data && data.pay_url) { location.href = data.pay_url; return; }
+          if (data && data.stub) { showStep(idx + 1); return; }
+          showFormError(form, data && data.error);
+        })
+        .catch(function (err) {
+          console.warn('[pay] сервер недоступен:', err);
+          done();
+          showFormError(form, 'network');
+        });
     });
   }
 
@@ -387,6 +408,11 @@
 
     var link = $('[data-invite]');
     var copy = $('[data-copy]');
+    var q = new URLSearchParams(location.search);
+    var orderId = q.get('order');
+    var token = q.get('t');
+
+    if (orderId && token) pollOrder(orderId, token);
     if (copy && link) {
       copy.addEventListener('click', function () {
         var txt = link.textContent.trim();
@@ -397,6 +423,51 @@
       });
     }
     track('PurchaseSuccessView', { lang: lang, demo: /demo=1/.test(location.search) });
+  }
+
+  /* Ссылку создаёт бэкенд после серверного колбэка от Robokassa, поэтому
+     страница успеха несколько секунд опрашивает статус заказа. */
+  function pollOrder(orderId, token, attempt) {
+    attempt = attempt || 0;
+    var note = $('[data-status-note]');
+    var box = $('[data-linkbox]');
+    var stub = $('[data-stub]');
+    if (stub) stub.hidden = true;
+    if (attempt === 0 && box) box.hidden = true;   /* демо-ссылку не показываем */
+
+    var setNote = function (key, isError) {
+      if (!note) return;
+      note.textContent = t(key);
+      note.hidden = false;
+      note.classList.toggle('is-error', Boolean(isError));
+    };
+
+    fetch(CFG.payment.statusUrl + '?order=' + encodeURIComponent(orderId) + '&t=' + encodeURIComponent(token))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) { setNote('success.failed', true); return; }
+
+        if (d.status === 'issued' && d.invite_link) {
+          var el = $('[data-invite]');
+          if (el) el.textContent = d.invite_link;
+          var open = $('[data-link="telegram"]');
+          if (open) open.setAttribute('href', d.invite_link);
+          if (box) box.hidden = false;
+          if (note) note.hidden = true;
+          track('AccessIssued', { order: orderId, lang: lang });
+          return;
+        }
+
+        if (d.status === 'paid_invite_failed') { setNote('success.issueError', true); return; }
+
+        setNote(d.status === 'created' ? 'success.pending' : 'success.waiting');
+        if (attempt < 20) setTimeout(function () { pollOrder(orderId, token, attempt + 1); }, 2000);
+        else setNote('success.issueError', true);
+      })
+      .catch(function () {
+        if (attempt < 20) setTimeout(function () { pollOrder(orderId, token, attempt + 1); }, 2500);
+        else setNote('success.failed', true);
+      });
   }
 
   /* ======================================================================

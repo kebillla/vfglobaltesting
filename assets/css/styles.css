@@ -123,7 +123,7 @@ s{color:var(--txt-3)}
 .hero{position:relative;padding:clamp(56px,9vw,110px) 0 clamp(48px,7vw,84px);overflow:hidden}
 .hero__bg{
   position:absolute;inset:0;
-  background:url("../img/chart.svg?v=4") center bottom/cover no-repeat;
+  background:url("../img/chart.svg?v=5") center bottom/cover no-repeat;
   opacity:.16;mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 70%,transparent);
   -webkit-mask-image:linear-gradient(to bottom,transparent,#000 25%,#000 70%,transparent);
   pointer-events:none;
@@ -432,3 +432,10 @@ s{color:var(--txt-3)}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* ---------------------- статус оплаты на странице успеха ------------------ */
+.statusnote{
+  margin:0 auto 22px;max-width:520px;padding:16px 20px;border-radius:var(--radius-sm);
+  background:var(--bg-2);border:1px solid var(--line);color:var(--txt-2);font-size:15px;
+}
+.statusnote.is-error{border-color:rgba(224,160,58,.4);background:rgba(224,160,58,.08);color:var(--txt)}
